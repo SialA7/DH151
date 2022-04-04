@@ -1,0 +1,28 @@
+body,html {
+	margin:0;
+	height:100%;
+	width:100%;
+}
+
+body {
+    display: grid;
+	grid-template-rows: 100px 1fr;
+	grid-template-columns: 150px 1fr;
+	grid-template-areas: 
+	"header header"
+	"sidebar content";
+}
+
+.header {
+	grid-area: header;
+	padding:10px;
+    background-color: rgba(51, 163, 47, 0.274);
+}
+.sidebar {
+	grid-area: sidebar;
+}
+.content {
+	grid-area: content;
+    padding:10px;
+    background-image: url("flowers.jpg");
+}

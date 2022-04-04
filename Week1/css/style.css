@@ -1,0 +1,32 @@
+body,html {
+	margin:0;
+	height:100%;
+	width:100%;
+}
+
+#map {
+	height: 100%;
+}
+
+body {
+    display: grid;
+	grid-template-rows: 50px 1fr;
+	grid-template-columns: 100px 1fr;
+	grid-template-areas: 
+	"header header"
+	"sidebar content";
+}
+
+.header {
+	grid-area: header;
+	padding:10px;
+    background-color: rgb(174, 191, 211);
+}
+.sidebar {
+	grid-area: sidebar;
+	padding:10px;
+    background-color: rgb(219, 179, 179);
+}
+.content {
+	grid-area: content;
+}
