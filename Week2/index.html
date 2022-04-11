@@ -73,16 +73,15 @@
 				'lat': 34.0689,
 				'long': -118.4452, 
 				'description': "For the last year or so, Los Angeles has been my home. It's an awfully short amount of time to be able to call a place a home, but, as a transfer student during the pandemic, this is all the time I have! I definitely don't think my chapter in LA is over, and I still have lots to learn here.",
-				'imgFile': 'http://Week2/images/Westwood.jpg'
+				'imgFile': 'http://DH151/Week2/images/Westwood.jpg'
 			}
 			
 		]
 		
 		homes.forEach(function(item){  
-			var img = new Image();   
-			img.src = item.imgFile; 
 			var marker = L.marker([item.lat, item.long]).addTo(map)
-				.bindPopup(item.name+ "<br>" + "<br>" + item.description)
+				.bindPopup(item.name+ "<br>" + "<img src =" + item.imgFile + "width='200px' height='200px'>" + "<br>"> + item.description)
+				"<img class = '.pic' src='" + item.image + "' width='100' height='100'/>"
 				.openPopup(); 
 		}
 		)	
