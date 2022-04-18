@@ -1,0 +1,29 @@
+<!-- 
+HTML: 
+    id is used when there is only one instance of something. Call an ID-ed item using a #
+        <div id = "map">
+    class is used when there will be multiple instances. Call using .___
+        <div class = "box">
+
+USING JQUERY:
+    $('.header')
+        S.fn.init [div.header, prevObject: S.fn.init(1)]
+    $('.header').hide()
+
+        S.fn.init [div.header, prevObject: S.fn.init(1)]
+    $('.header').show()
+
+        S.fn.init [div.header, prevObject: S.fn.init(1)]
+    $('.header').append('is really cool')
+
+        S.fn.init [div.header, prevObject: S.fn.init(1)]
+    $('.header').prepend('is really cool')
+
+        S.fn.init [div.header, prevObject: S.fn.init(1)]
+    $('.header').html('New Header')
+
+        S.fn.init [div.header, prevObject: S.fn.init(1)]
+    $('.header').html('<b>New Header</b>')
+
+        S.fn.init [div.header, prevObject: S.fn.init(1)]
+-->
