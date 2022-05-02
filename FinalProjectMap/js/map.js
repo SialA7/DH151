@@ -39,6 +39,7 @@ function readCSV(){
 	});
 }
 
+
 function mapCSV(){
 
 	// clear layers in case you are calling this function more than once
