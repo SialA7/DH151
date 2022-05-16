@@ -102,3 +102,31 @@ h2{
     color: rgb(249, 171, 103);
     font-family: 'Helvetica', sans-serif;
 }
+
+/* legend styles */
+.info {
+	padding: 6px 8px;
+	font: 14px/16px Arial, Helvetica, sans-serif;
+	color:rgb(250, 241, 207); 
+	background: rgb(31, 7, 70);
+	box-shadow: 0 0 15px rgba(0,0,0,0.2);
+	border-radius: 5px;
+	min-width: 250px;
+	min-height: 50px;
+}
+.info h4 {
+	margin: 0 0 5px;
+	color: #777;
+}
+
+.legend {
+	line-height: 18px;
+	color: #555;
+}
+.legend i {
+	width: 18px;
+	height: 18px;
+	float: left;
+	margin-right: 8px;
+	opacity: 0.7;
+}

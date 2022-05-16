@@ -226,28 +226,49 @@ function getColor(field){
 function createLegend(){
 	legend.onAdd = function (map) {
 		var div = L.DomUtil.create('div', 'info legend'),
-		breaks = [brew1.getBreaks(), brew2.getBreaks]
+		breaks1 = brew1.getBreaks(),
 		labels = [],
 		from, to;
 		
-		for (var i = 0; i < breaks.length; i++) {
-			for (j=0; j<breaks[j].length; j++){
-				from = breaks[i][j];
-				to = breaks[i+1][j+1];
-				if(to) {
-					labels.push(
-						'<i style="background:' + brew1.getColorInRange(from) + '"></i> ' +
-						'<i style="background:' + brew2.getColorInRange(from) + '"></i> ' +
-						from.toFixed(2) + ' &ndash; ' + to.toFixed(2));
-					}
+		for (var i = 0; i < breaks1.length; i++) {
+			from = breaks1[i];
+			to = breaks1[i + 1];
+			if(to) {
+				labels.push(
+					'<i style="background:' + brew1.getColorInRange(from) + '"></i> ' +
+					from.toFixed(2) + ' &ndash; ' + to.toFixed(2));
+				}
 			}
 			
 			div.innerHTML = labels.join('<br>');
 			return div;
-			}
 		};
 		
 		legend.addTo(map);
+}
+
+function createInfoPanel(){
+
+	info_panel.onAdd = function(map) {
+		this._div = L.DomUtil.create('div', 'info'); // create a div with a class "info"
+		this.update();
+		return this._div;
+	};
+
+	// method that we will use to update the control based on feature properties passed
+	info_panel.update = function(properties) {
+		// if feature is highlighted
+		if(properties){
+			this._div.innerHTML = `<b>${properties.Country}</b><br>Rate of Extreme Poverty: ${properties[fieldtomap1]}% <br>Labor Rights Index: ${properties[fieldtomap2]}`;
+		}
+		// if feature is not highlighted
+		else
+		{
+			this._div.innerHTML = 'Hover over a country';
+		}
+	};
+
+	info_panel.addTo(map);
 }
 
 // Function that defines what will happen on user interactions with each feature
@@ -291,26 +312,3 @@ function zoomToFeature(e) {
 	map.fitBounds(e.target.getBounds());
 }
 
-function createInfoPanel(){
-
-	info_panel.onAdd = function (map) {
-		this._div = L.DomUtil.create('div', 'info'); // create a div with a class "info"
-		this.update();
-		return this._div;
-	};
-
-	// method that we will use to update the control based on feature properties passed
-	info_panel.update = function (properties) {
-		// if feature is highlighted
-		if(properties){
-			this._div.innerHTML = `<b>${properties.Country}</b><br>Rate of Extreme Poverty: ${properties[fieldtomap1]}% <br>Labor Rights Index: ${properties[fieldtomap2]}`;
-		}
-		// if feature is not highlighted
-		else
-		{
-			this._div.innerHTML = 'Hover over a country';
-		}
-	};
-
-	info_panel.addTo(map);
-}
