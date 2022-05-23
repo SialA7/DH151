@@ -8,20 +8,21 @@ let markers = L.featureGroup();
 let povertyMarkers = L.featureGroup(); 
 let csvdata;
 
-const colorMat = [
-	['#C869F5', '#A96EFF', '#7F6FE8'],
-	['#DEABF5', '#B8B0E8', '#6E81FF'],
-	['#F5F5F5', '#ABC9F5', '#69A1F5']
-];
-
-let brew1 = new classyBrew();
+let brewEP = new classyBrew();
+let brewMP = new classyBrew(); 
+let brewNP = new classyBrew(); 
 let brew2 = new classyBrew(); 
 
 // geojson
 let geojsonPath = 'data/laborinthworld.geojson';
 let geojson_data;
-let geojson_layer1;
+
 let geojson_layer2;
+
+let geojson_layerEP;
+let geojson_layerMP; 
+let geojson_layerNP; 
+
 
 //legend
 let legend = L.control({position: 'bottomright'});
@@ -42,37 +43,60 @@ function getGeoJSON(){
 		geojson_data = data;
 
 		// call the map function
-		mapGeoJSON('ExtremePoor', 'OverallFairLabor')
+		mapGeoJSON('ExtremePoor', 'ModeratePoor', 'NearPoor', 'OverallFairLabor');
 	})
 }
 
 // function to map a geojson file
-function mapGeoJSON(field1, field2){
+function mapGeoJSON(extremePoverty, moderatePoverty, nearPoverty, laborIndex){
 
-	let WPvalues = [];
+	let EPvalues = [];
+	let MPvalues = [];
+	let NPvalues = [];
 	let LIvalues = [];
 
 	geojson_data.features.forEach(function(item,index){
-		if (item.properties[field1] == "" || item.properties[field1] == undefined){
-			item.properties[field1] = -1
+		if (item.properties[extremePoverty] == "" || item.properties[extremePoverty] == undefined){
+			item.properties[extremePoverty] = -1
 		}
 
-		if (item.properties[field2] == "" || item.properties[field2] == undefined){
-			item.properties[field2] = -1
+		if (item.properties[moderatePoverty] == "" || item.properties[moderatePoverty] == undefined){
+			item.properties[moderatePoverty] = -1
 		}
 
-		console.log(item.properties[field1])
-		WPvalues.push(item.properties[field1])
-		LIvalues.push(item.properties[field2])
+		if (item.properties[nearPoverty] == "" || item.properties[nearPoverty] == undefined){
+			item.properties[nearPoverty] = -1
+		}
+
+		if (item.properties[laborIndex] == "" || item.properties[laborIndex] == undefined){
+			item.properties[laborIndex] = -1
+		}
+
+		EPvalues.push(item.properties[extremePoverty])
+		MPvalues.push(item.properties[moderatePoverty])
+		NPvalues.push(item.properties[nearPoverty])
+		LIvalues.push(item.properties[laborIndex])
 	})
 
-	fieldtomap1 = field1;
-	fieldtomap2 = field2;
+	extrPov = extremePoverty;
+	modPov = moderatePoverty;
+	nPov = nearPoverty; 
+	labInd = laborIndex;
 
-	brew1.setSeries(WPvalues);
-	brew1.setNumClasses(3);
-	brew1.setColorCode('Blues');
-	brew1.classify('quantiles');
+	brewEP.setSeries(EPvalues);
+	brewEP.setNumClasses(5);
+	brewEP.setColorCode('Blues');
+	brewEP.classify('quantiles');
+
+	brewEP.setSeries(MPvalues);
+	brewEP.setNumClasses(5);
+	brewEP.setColorCode('Blues');
+	brewEP.classify('quantiles');
+
+	brewEP.setSeries(NPvalues);
+	brewEP.setNumClasses(5);
+	brewEP.setColorCode('Blues');
+	brewEP.classify('quantiles');
 
 	brew2.setSeries(LIvalues);
 	brew2.setNumClasses(4);
@@ -80,20 +104,38 @@ function mapGeoJSON(field1, field2){
 	brew2.classify('quantiles');
 
 	// create the layer and add to map
-	geojson_layer1 = L.geoJson(geojson_data, {
-		style: getStyle1, 
-		onEachFeature: onEachFeature
-	}).addTo(map);
+	geojson_layerEP = L.geoJson(geojson_data, {
+		style: getStyleEP, 
+		onEachFeature: onEachFeatureEP
+	});
+
+	geojson_layerMP = L.geoJson(geojson_data, {
+		style: getStyleMP, 
+		onEachFeature: onEachFeatureMP
+	});
+
+	geojson_layerNP = L.geoJson(geojson_data, {
+		style: getStyleNP, 
+		onEachFeature: onEachFeatureNP
+	});
 
 	geojson_layer2 = L.geoJson(geojson_data, {
 		style: getStyle2, 
-		onEachFeature: onEachFeature
+		onEachFeature: onEachFeature2
 	}).addTo(map);
 
-	// fit to bounds
-	map.fitBounds(geojson_layer1.getBounds())
+	let layers = {
+        "Extreme Poverty": geojson_layerEP,
+		"Moderate Poverty": geojson_layerMP, 
+		"Near Poverty": geojson_layerNP,
+    }
 
-	//createLegend();
+	L.control.layers(null,layers).addTo(map)
+
+	// fit to bounds
+	map.fitBounds(geojson_layer2.getBounds())
+
+	createLegend();
 	createInfoPanel();
 }
 
@@ -113,7 +155,6 @@ function readCSV(){
 		header: true,
 		download: true,
 		complete: function(data) {
-			console.log(data);
 			// put the data in a global variable
 			csvdata = data;
 
@@ -130,48 +171,19 @@ function mapCSV(){
 	markers.clearLayers();
 
 	// loop through each entry
-	csvdata.data.forEach(function(item,index){
-		if(item.OverallFairLabor != undefined){
-			// circle options
-			 let circleOptions = {
-				radius: item.OverallFairLabor*2,　// call a function to determine radius size
-				weight: 1,
-				color: 'white',
-				fillColor: 'navy',
-				fillOpacity: 0.5
-			}
-			let marker = L.circleMarker([item.Latitude,item.Longitude], circleOptions)
-			.on('mouseover',function(){
-				this.bindPopup(`${item['Country']} <br> Labor Indicators Score: ${item['OverallFairLabor']}`).openPopup()
-			}) // show data on hover
-			markers.addLayer(marker)	
-		}
-        
-        if(item.ExtremePoor != undefined && item.ExtremePoor != ""){
-            let Pmarker = L.marker([item.Latitude, item.Longitude])
-            .on('click', function(){
-                this.bindPopup(`${item['Country']} <br> Extreme Poverty Rate: ${item['ExtremePoor']} <br> Moderate Poverty Rate: ${item['ModeratePoor']} <br> Near Poverty Rate: ${item['NearPoor']}`).openPopup()
-            })
-            povertyMarkers.addLayer(Pmarker)
-        } 
-	});
+   csvdata.data.forEach(function(item,index){
+		/*if(casestudy = true){
+			create infoPanel, 
+			markers.addLayer(marker);
+		}*/
+	}); 
 
 	markers.addTo(map)
-    povertyMarkers.addTo(map)
-
-    let layers = {
-        "Working Poverty": povertyMarkers,
-        "Fair Labor": markers
-    }
-
-    L.control.layers(null,layers).addTo(map)
-
-	map.fitBounds(markers.getBounds())
 }
 
 // style each feature
-function getStyle1(feature){
-	if (feature.properties['ExtremePoor'] == -1){
+function getStyleEP(feature){
+	if (feature.properties[extrPov] == -1){
 		return {
 			stroke: false, 
 			fill: true, 
@@ -183,64 +195,76 @@ function getStyle1(feature){
 		return {
 			stroke: false,
 			fill: true,
-			fillColor: brew1.getColorInRange(feature.properties[fieldtomap1]),
-			fillOpacity: 0.8
-		}
-	}
-}
-
-function getStyle2(feature){
-	if (feature.properties['ExtremePoor'] == -1){
-		return {
-			stroke: false, 
-			fill: true, 
-			fillColor: '#000000',
-			fillOpacity: 1
-		}
-	}
-	else {
-		return {
-			stroke: false,
-			fill: true,
-			fillColor: brew2.getColorInRange(feature.properties[fieldtomap2]),
+			fillColor: brewEP.getColorInRange(feature.properties[extrPov]),
 			fillOpacity: 0.4
 		}
 	}
 }
 
-function getColor(field){
-	if (field != undefined && field != ""){
-		let x = Math.round((WorkingPoverty/10)*(1/3));
-		let y = Math.round(OverallFairLabor*(1/3));
-		
-		if (colorMat[x] != undefined){
-			return colorMat[x][y];
+function getStyleMP(feature){
+	if (feature.properties[modPov] == -1){
+		return {
+			stroke: false, 
+			fill: true, 
+			fillColor: '#000000',
+			fillOpacity: 1
 		}
 	}
 	else {
-		return '#000000';
+		return {
+			stroke: false,
+			fill: true,
+			fillColor: brewEP.getColorInRange(feature.properties[modPov]),
+			fillOpacity: 0.4
+		}
 	}
-
 }
+
+function getStyleNP(feature){
+	if (feature.properties[nPov] == -1){
+		return {
+			stroke: false, 
+			fill: true, 
+			fillColor: '#000000',
+			fillOpacity: 1
+		}
+	}
+	else {
+		return {
+			stroke: false,
+			fill: true,
+			fillColor: brewEP.getColorInRange(feature.properties[nPov]),
+			fillOpacity: 0.4
+		}
+	}
+}
+
+function getStyle2(feature){
+	if (feature.properties[extrPov] == -1){
+		return {
+			stroke: false, 
+			fill: true, 
+			fillColor: '#000000',
+			fillOpacity: 1
+		}
+	}
+	else {
+		return {
+			stroke: false,
+			fill: true,
+			fillColor: brew2.getColorInRange(feature.properties[labInd]),
+			fillOpacity: 0.8
+		}
+	}
+}
+
 
 function createLegend(){
 	legend.onAdd = function (map) {
-		var div = L.DomUtil.create('div', 'info legend'),
-		breaks1 = brew1.getBreaks(),
-		labels = [],
-		from, to;
+		var div = L.DomUtil.create('div', 'info legend');
+			div.innerHTML +=
+					'Relationship: <br> <img src= images/legend.png width = 150 height = 150>';
 		
-		for (var i = 0; i < breaks1.length; i++) {
-			from = breaks1[i];
-			to = breaks1[i + 1];
-			if(to) {
-				labels.push(
-					'<i style="background:' + brew1.getColorInRange(from) + '"></i> ' +
-					from.toFixed(2) + ' &ndash; ' + to.toFixed(2));
-				}
-			}
-			
-			div.innerHTML = labels.join('<br>');
 			return div;
 		};
 		
@@ -259,7 +283,13 @@ function createInfoPanel(){
 	info_panel.update = function(properties) {
 		// if feature is highlighted
 		if(properties){
-			this._div.innerHTML = `<b>${properties.Country}</b><br>Rate of Extreme Poverty: ${properties[fieldtomap1]}% <br>Labor Rights Index: ${properties[fieldtomap2]}`;
+			if (properties[extrPov] == -1){
+				this._div.innerHTML = `<b>${properties.Country}</b><br>Working poverty rate unavailable <br>Labor Rights Index: ${properties[labInd]}`;
+			}
+			else {
+				this._div.innerHTML = `<b>${properties.Country}</b><br> Extreme poverty rate: ${properties[extrPov]}% <br> Moderate poverty rate: ${properties[modPov]}% <br> Near poverty rate: ${properties[nPov]}% <br> Labor Rights Index: ${properties[labInd]}`;
+			}
+			
 		}
 		// if feature is not highlighted
 		else
@@ -271,8 +301,34 @@ function createInfoPanel(){
 	info_panel.addTo(map);
 }
 
+
+
 // Function that defines what will happen on user interactions with each feature
-function onEachFeature(feature, layer) {
+function onEachFeatureEP(feature, layer) {
+	layer.on({
+		mouseover: highlightFeature, 
+		mouseout: resetHighlightEP,
+		click: zoomToFeature
+	});
+}
+
+function onEachFeatureMP(feature, layer) {
+	layer.on({
+		mouseover: highlightFeature,
+		mouseout: resetHighlightMP,
+		click: zoomToFeature
+	});
+}
+
+function onEachFeatureNP(feature, layer) {
+	layer.on({
+		mouseover: highlightFeature,
+		mouseout: resetHighlightNP,
+		click: zoomToFeature
+	});
+}
+
+function onEachFeature2(feature, layer) {
 	layer.on({
 		mouseover: highlightFeature,
 		mouseout: resetHighlight,
@@ -289,8 +345,8 @@ function highlightFeature(e) {
 		weight: 2,
 		stroke: true, 
 		color: '#ffffff',
-		fillColor: '#666',
-		fillOpacity: 0.7
+		fillColor: '#000000', 
+		fillOpacity: 0.6, 
 	});
 
 	if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
@@ -302,8 +358,20 @@ function highlightFeature(e) {
 
 // on mouse out, reset the style, otherwise, it will remain highlighted
 function resetHighlight(e) {
-	geojson_layer1.resetStyle(e.target);
 	geojson_layer2.resetStyle(e.target);
+	info_panel.update() // resets infopanel
+}
+
+function resetHighlightEP(e) {
+	geojson_layerEP.resetStyle(e.target);
+	info_panel.update() // resets infopanel
+}
+function resetHighlightMP(e) {
+	geojson_layerMP.resetStyle(e.target);
+	info_panel.update() // resets infopanel
+}
+function resetHighlightNP(e) {
+	geojson_layerNP.resetStyle(e.target);
 	info_panel.update() // resets infopanel
 }
 

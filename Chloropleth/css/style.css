@@ -121,7 +121,9 @@ h2{
 
 .legend {
 	line-height: 18px;
-	color: #555;
+	color: rgb(31, 7, 70);
+	background: rgb(250, 241, 207);
+	max-width: 200px; 
 }
 .legend i {
 	width: 18px;
